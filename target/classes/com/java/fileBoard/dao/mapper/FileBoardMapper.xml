@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="dao.mapper.FileBoardMapper">
+
+	<resultMap type="com.java.fileBoard.dto.FileBoardDto" id="fileBoardDto">
+		<!-- column: 데이터베이스 property : data -->
+		<result column="board_number" property="boardNumber" />
+		<result column="writer" property="writer" />
+		<result column="subject" property="subject" />
+		<result column="email" property="email" />
+		<result column="content" property="content" />
+		<result column="password" property="password" />
+		
+		<result column="write_date" property="writeDate" />
+		<result column="read_count" property="readCount" />
+		<result column="group_number" property="groupNumber" />
+		<result column="sequence_number" property="sequenceNumber" />
+		<result column="sequence_level" property="sequenceLevel" />
+		
+		<result column="file_name" property="fileName" />
+		<result column="path" property="path" />
+		<result column="file_size" property="fileSize" />
+
+	</resultMap>
+
+
+	<select id="board_group_number_max" resultType="int">
+		select
+		nvl(max(group_number), 0) from board
+	</select>
+ 
+	<insert id="board_insert"
+		parameterType="com.java.fileBoard.dto.FileBoardDto">
+		insert into board(
+		board_number,
+		writer,
+		subject,
+		email,
+		content,
+		password,
+		write_date,
+		read_count,
+		group_number,
+		sequence_number,
+		sequence_level,
+		file_name,
+		path,
+		file_size)
+		values (board_board_number_seq.nextval,
+		#{writer},
+		#{subject},
+		#{email},
+		#{content},
+		#{password},
+		#{writeDate},
+		#{readCount},
+		#{groupNumber},
+		#{sequenceNumber},
+		#{sequenceLevel},
+		#{fileName},
+		#{path},
+		#{fileSize})
+	</insert>
+
+
+	<select id="board_count" resultType="int">
+		select count(*) from board
+	</select>
+
+
+	<select id="board_list" parameterType="java.util.HashMap" resultMap="fileBoardDto">
+		<![CDATA[
+		  select * from
+		    (select rownum as rnum, a.* from (select * FROM board order by group_number desc, sequence_number asc) a) b 
+		   where b.rnum>=#{startRow} and b.rnum<=#{endRow}
+		]]>
+	</select> 
+	
+	  <update id="board_writer_number" parameterType="java.util.HashMap">
+         update board set sequence_number=sequence_number+1
+         where group_number=#{groupNumber} and sequence_number>#{sequenceNumber}
+   </update>
+
+	<update id="board_read_count" parameterType="int">
+      <![CDATA[
+         update board set read_count=read_count+1 where board_number =#{boardNumber}
+      ]]>
+   </update>
+	
+	
+ 	<select id="board_read" parameterType="int" resultMap="fileBoardDto">
+		select * from board where board_number=#{boardNumber}
+	</select>
+	<!-- 
+	<delete id="board_delete" parameterType="java.util.HashMap" >
+		delete from board where board_number=#{boardNumber} and password=#{password}
+	</delete>
+	-->
+	<update id="board_update" parameterType="java.util.HashMap">
+		update board set subject=#{boardDto.subject}, email=#{boardDto.email}, content=#{boardDto.content}, password=#{boardDto.password}, write_date=#{boardDto.writeDate} where board_number=#{boardNumber}
+	</update> 
+	 
+	 
+</mapper>
